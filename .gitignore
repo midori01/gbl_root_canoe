@@ -37,3 +37,6 @@ submodules/unsigned_abl.elf
 
 # Local reF1nd maintenance notes; never publish them with the fork
 /reF1nd/
+
+# Generated resident key relay embedded in BDS
+/submodules/uefi/edk2/QcomModulePkg/Include/BootKeyRelayImage.h

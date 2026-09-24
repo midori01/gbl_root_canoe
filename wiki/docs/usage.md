@@ -66,4 +66,4 @@
 
 ## Notes
 
-- When OEM unlocking is enabled, **hold Volume Up during startup to open the boot menu, then select Enter Fastboot to enter Superfastboot mode.**
+- When OEM unlocking is enabled, **hold Volume Up during startup to open the boot menu (Enter Fastboot leads to Superfastboot), or hold Volume Down to return to official fastboot.**

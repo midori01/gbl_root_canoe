@@ -72,7 +72,7 @@ Then complete the install manually (see the [Wiki](https://github.com/superturtl
 Before rebooting for an OTA update, use the module WebUI to flash and retain the old ABL version. "Update efisp" is enabled by default; for a major version upgrade keep it on, otherwise the device may get stuck on the first boot screen.
 
 ### 4. Superfastboot Usage Instructions
-When OEM Unlocking is enabled, hold **Volume Up** during startup to open the boot menu, then select **Enter Fastboot** to enter Superfastboot mode.
+When OEM Unlocking is enabled, hold **Volume Up** during startup to open the boot menu (select **Enter Fastboot** for Superfastboot), or hold **Volume Down** to hand off to official fastboot.
 Common commands include:
 - **Temp-boot an EFI file (without flashing)**: `fastboot boot xxx.efi`
 - **Lock and Unlock (BL related)**:

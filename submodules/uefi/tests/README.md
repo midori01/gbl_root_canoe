@@ -120,7 +120,49 @@ establish the final linked image size or real firmware compatibility.
 On-device checks: main/submenus, long directory names and more than 12 entries;
 marquee tail/head readability, switch/select during scrolling, slow-GOP devices;
 BL/ARB/Reboot tool pages and their warnings; returning from a child EFI app;
-entering SuperFastboot; OEM-disabled unattended boot remains silent and fast.
+
+## Stock Fastboot key handoff
+
+Run `sh submodules/uefi/tests/run_boot_keys_tests.sh`. This compiles the actual
+scanner and relay against EDK2 headers with ASan/UBSan, plus tests the PE embedding
+guard. No device is written. Coverage includes pre-buffered Down without repeats,
+power then Up/Down, OEM off with zero firmware calls, timeout and input failures,
+one-shot replay/restoration, unload before replay, LoadImage/StartImage failures,
+and restoration of both security callbacks on all load outcomes. Tests replace
+the embedded image with dummy bytes; they do not emulate the firmware PE loader.
+
+The normal one-second OEM-on scan now recognises Down as well as Up, and no longer
+discards an already-buffered key. Down loads an embedded `UEFI_DRIVER`, arms its
+one-shot `ReadKeyStrokeEx` relay, and returns from BDS **before** FAT/USB/graphics
+initialisation or launching `boot.efi`. The caller must be the runtime stock ABL,
+not an arbitrary EFI shell. This is not a reboot and does not touch misc, ABL,
+efisp, slot state or reboot variables. OEM off never scans or loads the relay.
+Failure to arm the relay opens the existing rescue menu with an error message.
+
+Why a separate driver: returning from `StartImage` unloads a UEFI application.
+An input callback inside BDS would therefore become a use-after-free. The small
+driver stays resident independently of BDS, restores the firmware reader before
+returning the single Down event, and supports safe unloading. Its memory is
+boot-services memory, not a persistent installation. Both security callbacks
+are restored immediately after loading it. The embedding script rejects an EFI
+application subsystem, a non-AArch64 image, or a driver larger than 32 KiB. The
+existing **total BDS size <= 512 KiB** CI check remains authoritative.
+
+Binary evidence for the supplied vulnerable ABL (input SHA-256
+`607531d1858c8dd03e68c893bf9b03ba0a409490f348d8d34483f516df122f31`):
+in its extracted LinuxLoader image, GBL StartImage is called at RVA `0x6e4c`;
+after it returns the normal path reaches the key helper at `0x6298`/`0x31620`.
+That helper opens SimpleTextInputEx on ConsoleInHandle, reads once, then resets
+input. The check at `0x62b4..0x62c8` accepts scan 2 (Down) and sets the Fastboot
+flag. This is evidence for this ABL, not proof that every vendor ABL uses the
+same key mapping or return path. The implementation has no hardcoded ABL offsets.
+
+Device acceptance still required: OEM on + held Down before power-on reaches
+**stock** Fastboot without an extra reboot; stock Fastboot is functional; Up
+opens the menu; no key boots Android; OEM off + either volume key stays silent
+and takes the unchanged quick/default path. Also test Down pressed within the
+scan window and a normal boot after leaving stock Fastboot. Do not infer device
+compatibility or final image size from the host tests alone.
 
 ## Interactive menu input filtering
 
@@ -147,7 +189,7 @@ tool; its state survives redraws and submenus within an image, not image unload.
   now explicitly require `SfbKeySelect`, as Tools already did.
 - There are no constructors, persistent input hooks or background callbacks.
   A 10 ms poll runs only while an interactive menu waits. The power-on key
-  scanner, OEM gate and raw Android fast path are unchanged.
+  scanner, OEM gate, stock Fastboot relay and raw Android fast path are unchanged.
 
 SimpleTextIn does not expose physical release events or event timestamps. These
 are timing heuristics, not proof that a key was physically released: very fast

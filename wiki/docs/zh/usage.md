@@ -66,4 +66,4 @@
 
 ## 注意事项
 
-- 开启 OEM 解锁时，**开机按住音量上（Volume Up）键进入启动菜单，再选择 Enter Fastboot 进入 Superfastboot 模式。**
+- 开启 OEM 解锁时，**开机按住音量上（Volume Up）键进入启动菜单（选 Enter Fastboot 进入 Superfastboot），或按住音量下（Volume Down）键直接返回官方 Fastboot。**

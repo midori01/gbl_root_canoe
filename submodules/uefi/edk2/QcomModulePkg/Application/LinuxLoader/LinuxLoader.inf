@@ -70,6 +70,8 @@
 
 [Sources]
 	LinuxLoader.c
+	SuperFbBootKeys.c
+	SuperFbBootKeys.h
 	SuperFbMenu.h
 	SuperFbFat.c
 	SuperFbStore.c

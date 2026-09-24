@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: BSD-3-Clause
+[Defines]
+  INF_VERSION     = 0x00010006
+  BASE_NAME       = BootKeyRelay
+  FILE_GUID       = 963EDFB0-B95C-4F6E-8E61-D4FC30F0DBA3
+  MODULE_TYPE     = UEFI_DRIVER
+  VERSION_STRING  = 1.0
+  ENTRY_POINT     = BootKeyRelayEntry
+  UNLOAD_IMAGE    = BootKeyRelayUnload
+
+[Sources]
+  BootKeyRelay.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+
+[Protocols]
+  gEfiSimpleTextInputExProtocolGuid

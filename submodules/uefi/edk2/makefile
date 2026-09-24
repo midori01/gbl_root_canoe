@@ -343,7 +343,7 @@ ifeq "$(CLANG_NEED_EXTRA_DLINK_FLAGS)" "true"
 	export CLANG_EXTRA_DLINK_FLAGS := -Wl,--no-relax -Wl,--apply-dynamic-relocs
 endif
 
-.PHONY: all cleanall srpm tools tools-clean
+.PHONY: all cleanall srpm tools tools-clean boot-key-relay
 
 all: ABL_FV_ELF
 	$(call validate-cum-sign)
@@ -379,7 +379,15 @@ tools-clean:
 $(EDK_TOOLS_PATH_MARK_FILE): $(EDK_TOOLS_SRC_FILE)
 	@$(call edk_tools_generate)
 
-ABL_FV_IMG: $(EDK_TOOLS_PATH_MARK_FILE)
+boot-key-relay: $(EDK_TOOLS_PATH_MARK_FILE)
+	@. ./edksetup.sh BaseTools && \
+	build -p $(WORKSPACE)/QcomModulePkg/Drivers/BootKeyRelay/BootKeyRelay.dsc \
+	-a $(ARCHITECTURE) -t $(TARGET_TOOLS) -b $(TARGET) -j build_bootkeyrelay.log
+	python3 ../scripts/embed_boot_key_relay.py \
+	  Build/BootKeyRelay/$(TARGET)_$(TARGET_TOOLS)/$(ARCHITECTURE)/BootKeyRelay.efi \
+	  QcomModulePkg/Include/BootKeyRelayImage.h
+
+ABL_FV_IMG: $(EDK_TOOLS_PATH_MARK_FILE) boot-key-relay
 	@. ./edksetup.sh BaseTools && \
 	build -p $(WORKSPACE)/QcomModulePkg/QcomModulePkg.dsc \
 	-a $(ARCHITECTURE) \
